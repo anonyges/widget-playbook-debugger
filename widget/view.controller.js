@@ -11,14 +11,26 @@
   playbook_debugger100Ctrl.$inject = ['$scope', '$rootScope', 'API', 'Field', 'toaster', '$resource', '$http', '$q', 'anonygesJSUtil_v1'];
 
   function playbook_debugger100Ctrl($scope, $rootScope, API, Field, toaster, $resource, $http, $q, anonygesJSUtil_v1) {
-    $rootScope.$on('csOpenExecutionLog', function (event, json_data) {
+    // -------------------------------------------------------- Debug Functionalities Start  --------------------------------------------------------
+    // $rootScope.$on('csOpenExecutionLog', function (event, json_data) {
+    //   console.debug(json_data);
+    // });
+
+
+    // $rootScope.$on('csOpenExecutionLogPanel', function (event, json_data) {
+    //   console.debug(json_data);
+    // });
+
+
+    $rootScope.$on('runningPlaybook', function (event, json_data) {
       console.debug(json_data);
     });
 
 
     $scope.$on("endpoint:click", function (event, json_data) {
-      console.debug(json_data);
+      console.debug("clicked step", json_data);
     });
+    // -------------------------------------------------------- Debug Functionalities End  --------------------------------------------------------
 
 
 
@@ -44,6 +56,7 @@
 
 
     $scope.$watch("data_cs_search_pattern_model", function (new_value, old_value) {
+      // this side is for the playbook designer to work
       const playbook_designer = document.querySelector('#designer');
       const playbook_designer_scope = angular.element(playbook_designer).scope();
 
@@ -81,13 +94,15 @@
         }
       }
 
+      // this side is for the executed history of the playbook
       const runningPlaybookCtl = document.querySelector('div[data-ng-controller="RunningPlaybookCtl"]');
       const runningPlaybookCtl_scope = angular.element(runningPlaybookCtl).scope()
 
       if (runningPlaybookCtl_scope) {
         for (const _step_uuid of highlighted_step_uuids) {
           const _step_elem = runningPlaybookCtl.querySelector(`#step-${_step_uuid}`);
-          highlight_step(_step_elem);
+          if (_step_elm)
+            highlight_step(_step_elem);
         }
       }
     });
@@ -99,6 +114,62 @@
     $scope.data_cs_jinja_debug_editor_settings = anonygesJSUtil_v1.getMonacoEditorSettings()["editorSettings"];
     $scope.data_cs_jinja_debug_editor_settings["language"] = "jinja";
     $scope.data_cs_jinja_debug_editor_settings["theme"] = "vs-dark";
+
+    $scope.render_jinja_result_is_string = false;
+    $scope.data_cs_jinja_ouptut_string_model = "";
+
+    $scope.render_jinja_result_is_json = false;
+    $scope.data_cs_jinja_ouptut_json_model = "";
+    $scope.allDataEditorOptions = {
+      mode: "view",
+      modes: ["view", "code"]
+    };
+
+
+    $scope.render_jinja_result_processing = false;
+
+    // finding the runningPlaybookScope with scope iteration
+    // window.onclick = function (event) {alert(event.target.id);}
+    let runningPlaybookStepOutputScope = null;
+    document.addEventListener("click", function (evnt) {
+      const _t = document.querySelector('cs-running-playbook-designer');
+      if (_t) {
+        runningPlaybookStepOutputScope = angular.element(_t.children[0]).scope();
+        const stepName = runningPlaybookStepOutputScope.params.selectedStep.name;
+        const loadedStep = stepName ? stepName : runningPlaybookStepOutputScope.params.copyButtonTitle;
+        $scope.jinja_status_text = `loaded step: ${loadedStep}`;
+      }
+    });
+
+    $scope.bt_render_jinja_template = bt_render_jinja_template;
+    function bt_render_jinja_template() {
+      $scope.render_jinja_result = false;
+      $scope.render_jinja_result_processing = true;
+
+      const content = runningPlaybookStepOutputScope ? runningPlaybookStepOutputScope.params.selectedTab.content : "";
+      anonygesJSUtil_v1.jinja($scope.config.data_cs_jinja_debug_editor_content, JSON.stringify(content)).then(function (data) {
+        const result = data.result;
+
+        $scope.render_jinja_result = true;
+        $scope.render_jinja_result_type = typeof (result);
+        $scope.data_cs_jinja_ouptut_model = result;
+
+        if (typeof (result) == "object" || anonygesJSUtil_v1.is_json_string(result)) {
+          $scope.render_jinja_result_is_json = true;
+          $scope.render_jinja_result_is_string = false;
+        }
+        else {
+          $scope.render_jinja_result_is_json = false;
+          $scope.render_jinja_result_is_string = true;
+        }
+
+        $scope.render_jinja_result_processing = false;
+      })
+        .catch(function (_response) {
+          // todo show error on response
+        });
+    }
+
     // -------------------------------------------------------- Jinja Debug Editor End  --------------------------------------------------------
 
 

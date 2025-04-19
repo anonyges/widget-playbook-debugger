@@ -24,7 +24,7 @@
   <hr>
 
 
-  <!-- Export Executed Playbooks  -->
+  <!-- Jinja Editor  -->
   <div ng-form name="form_jinja_debug_editor" class="form-group">
     <div class="display-flex-space-between" style="align-items: center;">
       <span>Jinja Editor</span>
@@ -35,11 +35,29 @@
       </div>
     </div>
     <div class="form-group" data-ng-hide="jinja_debug_editor_hide">
-      <div class="field-editor" data-ng-class="{'editorFullScreen': field.fullscreen}"
-          id="data_cs_jinja_debug_editor" name="data_cs_jinja_debug_editor" data-monaco-editor
-          data-editor-config="data_cs_jinja_debug_editor_settings" data-editor-content="config.data_cs_jinja_debug_editor_content"
-          data-content-change="data_cs_jinja_debug_editor_fileContentChanged(newContent)" data-editor-changed="data_cs_jinja_debug_editor_editorChanged(editor)"
-          data-field="data_cs_jinja_debug_editor_field" data-show-taskbar="true"></div>
+      <label>Jinja Input</label>
+      <div class="field-editor" data-ng-class="{'editorFullScreen': field.fullscreen}" id="data_cs_jinja_debug_editor"
+        name="data_cs_jinja_debug_editor" data-monaco-editor data-editor-config="data_cs_jinja_debug_editor_settings"
+        data-editor-content="config.data_cs_jinja_debug_editor_content"
+        data-content-change="data_cs_jinja_debug_editor_fileContentChanged(newContent)"
+        data-editor-changed="data_cs_jinja_debug_editor_editorChanged(editor)"
+        data-field="data_cs_jinja_debug_editor_field" data-show-taskbar="true"></div>
+      <div class="display-flex-space-between" style="align-items: center;">
+        <label>{{jinja_status_text}}</label>
+        <button class="btn btn-primary btn-sm pull-right" ng-click="bt_render_jinja_template()">Render</button>
+      </div>
+      <cs-spinner data-ng-show="render_jinja_result_processing"></cs-spinner>
+      <div data-ng-show="render_jinja_result">
+        <label>Output type: {{render_jinja_result_type}}</label>
+        <div data-cs-json-editor data-options="allDataEditorOptions" data-json="data_cs_jinja_ouptut_model"
+          class="jinja-editor-json-view" data-update-on-change="true"
+          data-ng-show="render_jinja_result_is_json"></div>
+        <textarea
+          class="form-control result-output max-width-100 ng-pristine ng-untouched ng-valid ng-scope ng-not-empty"
+          name="data_cs_jinja_ouptut_model" rows="5" data-ng-model="data_cs_jinja_ouptut_model"
+          readonly="readonly" data-ng-show="!render_jinja_result_is_json"
+          aria-invalid="false"></textarea>
+      </div>
     </div>
   </div>
   <hr>
@@ -56,11 +74,14 @@
       </div>
     </div>
     <div class="form-group" data-ng-hide="export_executed_playbook_hide">
-      <div class="display-flex-space-between" style="align-items: center;">
+      <!-- <div class="display-flex-space-between" style="align-items: center; padding: 10px;">
         <span>TODO option 1:</span>
         <div>cs_field</div>
+      </div> -->
+      <div class="display-flex-space-between" style="align-items: center;">
+        <span></span>
+        <button class="btn btn-primary btn-sm pull-right" ng-click="bt_export_executed_playbook()">Export</button>
       </div>
-      <button class="btn btn-primary btn-sm pull-right" ng-click="bt_export_executed_playbook()">Export</button>
     </div>
   </div>
   <hr>
@@ -98,7 +119,10 @@
       </div>
     </div>
     <div class="form-group" data-ng-hide="inject_draggable_ui_hide">
-      <button class="btn btn-primary btn-sm pull-right" ng-click="bt_inject_draggable_ui()">Draggable UI</button>
+      <div class="display-flex-space-between" style="align-items: center;">
+        <span></span>
+        <button class="btn btn-primary btn-sm pull-right" ng-click="bt_inject_draggable_ui()">Draggable UI</button>
+      </div>
     </div>
   </div>
   <hr>
